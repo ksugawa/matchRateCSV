@@ -1,18 +1,26 @@
-const file = "csv/prefectures_surnames.csv";
+const file = "./csv/prefectures_surnames.csv";
 
-const parseCSV = (file) => {
+async function parseCSV(file) {
   return new Promise((resolve, reject) => {
-    Papa.parse(file, {
-      header: true,
-      complete: (results) => {
-        resolve(results.data);
-      },
-      error: () => {
-        reject(new Error("csv読み込み失敗"));
-      },
-    });
+    fetch(file)
+      .then((response) => response.text())
+      .then((text) => {
+        Papa.parse(text, {
+          header: true,
+          complete: (results) => {
+            console.log("パース結果", results);
+            resolve(results.data);
+          },
+          error: () => {
+            reject(new Error("CSV読み込み失敗"));
+          },
+        });
+      })
+      .catch(() => {
+        reject(new Error("ファイル取得失敗"));
+      });
   });
-};
+}
 
 const displayMatchTable = (data) => {
   const surnameCounts = {};
@@ -25,41 +33,67 @@ const displayMatchTable = (data) => {
       surnameCounts[surname] = new Set();
     }
 
-    surnameCounts[surname].add(prefecture);
+    if (prefecture && surname) {
+      // データが存在するか確認
+      surnameCounts[surname].add(prefecture);
+    }
   });
 
   // 各名字がどれだけの都道府県に存在するかを計算
-  const surnameRankings = Object.entries(surnameCounts).map(([surname, prefectures]) => {
-    return { surname, count: prefectures.size };
-  });
+  const totalPrefectures = 47;
+  const surnameRankings = Object.entries(surnameCounts).map(
+    ([surname, prefectures]) => {
+      const percentage = (prefectures.size / totalPrefectures) * 100;
+      return { surname, percentage: percentage.toFixed(2) };
+    }
+  );
 
   // 出現数でソートして上位3位を抽出
-  surnameRankings.sort((a, b) => b.count - a.count);
+  surnameRankings.sort((a, b) => b.percentage - a.percentage);
   const topSurnames = surnameRankings.slice(0, 3);
 
-  const table = document.createAttribute("table");
-  topSurnames.forEach(({ surname, count }) => {
-    const tr = document.createElement('tr');
-    const tdSurname = document.createElement('td');
-    const tdCount = document.createElement('td');
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  const thSurname = document.createElement("th");
+  const thPercentage = document.createElement("th");
+
+  thSurname.textContent = "名字";
+  thPercentage.textContent = "割合";
+
+  headerRow.appendChild(thSurname);
+  headerRow.appendChild(thPercentage);
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+
+  topSurnames.forEach(({ surname, percentage }) => {
+    const tr = document.createElement("tr");
+    const tdSurname = document.createElement("td");
+    const tdPercentage = document.createElement("td");
 
     tdSurname.textContent = surname;
-    tdCount.textContent = `${count} `;
+    tdPercentage.textContent = `${percentage}% `;
 
     tr.appendChild(tdSurname);
-    tr.appendChild(tdCount);
-    table.appendChild(tr);
+    tr.appendChild(tdPercentage);
+    tbody.appendChild(tr);
   });
-
-  document.querySelector('.contents').appendChild(table);
+  table.appendChild(tbody);
+  document.querySelector(".contents").appendChild(table);
 };
+async function initialize() {
+  try {
+    const data = await parseCSV(file);
+    console.log("読み込んだcsvデータ", data);
 
-try {
-  const data = await parseCSV(file);
-  console.log("読み込んだcsvデータ", +data);
-  document.getElementById("display").addEventListener("click", () => {
-    displayMatchTable(data);
-  });
-} catch (error) {
-  console.error(error);
+    document.getElementById("display").addEventListener("click", () => {
+      displayMatchTable(data);
+    });
+  } catch (error) {
+    console.error(error);
+  }
 }
+
+initialize();
