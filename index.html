@@ -10,10 +10,65 @@
     <main>
       <div class="inner">
         <div class="flex">
-            <p>全国苗字ランキング</p>
-            <button id="display">表示</button>
+          <p>全国苗字ランキング</p>
+          <button id="display">表示</button>
         </div>
-        <div class="contents">
+        <div class="contents"></div>
+        <!-- 検索ボタン -->
+        <button onclick="openModal()">地域区分検索</button>
+
+        <!-- モーダルウィンドウ -->
+        <div id="regionModal" class="modal" style="display: none">
+          <div class="modal-content">
+            <span onclick="closeModal()">閉じる</span>
+            <h3>地域を選択してください</h3>
+            <h4>大カテゴリ</h4>
+            <input
+              type="checkbox"
+              id="hokkaido"
+              onclick="filterRegions('hokkaido')"
+            />
+            北海道<br />
+            <input
+              type="checkbox"
+              id="tohoku"
+              onclick="filterRegions('tohoku')"
+            />
+            東北<br />
+            <input
+              type="checkbox"
+              id="kanto"
+              onclick="filterRegions('kanto')"
+            />
+            関東<br />
+            <input
+              type="checkbox"
+              id="chubu"
+              onclick="filterRegions('chubu')"
+            />
+            中部<br />
+            <input
+              type="checkbox"
+              id="kinki"
+              onclick="filterRegions('kinki')"
+            />
+            近畿<br />
+            <input
+              type="checkbox"
+              id="chugokuShikoku"
+              onclick="filterRegions('chugokuShikoku')"
+            />
+            中国・四国<br />
+            <input
+              type="checkbox"
+              id="kyushu"
+              onclick="filterRegions('kyushu')"
+            />
+            九州
+
+            <div id="checkboxContainer"></div>
+            <!-- チェックボックスをここに追加 -->
+          </div>
         </div>
       </div>
     </main>
